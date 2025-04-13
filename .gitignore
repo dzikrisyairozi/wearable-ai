@@ -1,0 +1,5 @@
+.env
+__pycache__/
+.venv/
+.ai_chatbot.egg-info/
+src/ai_chatbot.egg-info/
