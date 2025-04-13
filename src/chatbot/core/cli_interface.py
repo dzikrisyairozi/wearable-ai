@@ -59,7 +59,9 @@ class CLIInterface:
                     result = self.model_handler.generate_response(user_input)
                 
                 # Display response
-                self.console.print("\n[bold blue]AI[/bold blue]")
+                self.console.print("\n[bold blue]" + 
+                    (self.model_handler.model_name.split('/')[-1] if self.debug_mode else "AI") +
+                    "[/bold blue]")
                 self.console.print(Markdown(result["response"]))
                 
                 # Show timing information in debug mode
@@ -70,7 +72,8 @@ class CLIInterface:
                 self.discord_handler.send_message(
                     user_input, 
                     result["response"],
-                    debug_info=result["timing"] if self.debug_mode else None
+                    debug_info=result["timing"] if self.debug_mode else None,
+                    model_name=self.model_handler.model_name if self.debug_mode else None
                 )
                 
             except Exception as e:

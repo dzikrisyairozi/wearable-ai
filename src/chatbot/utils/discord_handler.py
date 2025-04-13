@@ -12,7 +12,7 @@ class DiscordHandler:
         if not self.webhook_url:
             print("Warning: Discord webhook URL not found in environment variables")
             
-    def send_message(self, user_message: str, ai_response: str, debug_info: Optional[Dict] = None) -> bool:
+    def send_message(self, user_message: str, ai_response: str, debug_info: Optional[Dict] = None, model_name: Optional[str] = None) -> bool:
         """Send a message to Discord webhook"""
         if not self.webhook_url:
             return False
@@ -20,8 +20,9 @@ class DiscordHandler:
         try:
             webhook = DiscordWebhook(url=self.webhook_url)
             
-            # Format the message
-            message = f"**User:** {user_message}\n**AI:** {ai_response}"
+            # Format the message with model name if in debug mode
+            display_name = model_name.split('/')[-1] if debug_info and model_name else "AI"
+            message = f"**User:** {user_message}\n**{display_name}:** {ai_response}"
             
             # Add debug information if available
             if debug_info:
