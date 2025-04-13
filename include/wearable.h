@@ -1,3 +1,10 @@
+/**
+ * @file wearable.h
+ *
+ * @brief Header file for the wearable device.
+ * @author Azzam Wildan (2025)
+ */
+
 #ifndef WEARABLE_H
 #define WEARABLE_H
 
@@ -32,6 +39,8 @@
 
 #define MIDDLEWARE_UDP_PORT 0x2233
 #define MIDDLEWARE_ID 0x23
+
+#define CHATBOT_UDP_PORT 0x3344
 
 /**
  * Hardware definitions
