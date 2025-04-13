@@ -1,6 +1,4 @@
---no-cache-dir
-transformers[torch]==4.37.2
-torch==2.2.0
+llama-cpp-python==0.2.6
 accelerate==0.27.2
 discord-webhook==1.3.0
 python-dotenv==1.0.1
