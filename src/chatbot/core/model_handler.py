@@ -1,7 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from typing import Optional, List
+from typing import Optional, List, Dict
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +22,9 @@ class ModelHandler:
         self.use_gpu = os.getenv("USE_GPU", "true").lower() == "true"
         self.num_threads = int(os.getenv("NUM_THREADS", "4"))
         
+        # Debug settings
+        self.debug_mode = os.getenv("DEBUG_MODE", "false").lower() == "true"
+        
         # Initialize model and tokenizer
         self.model = None
         self.tokenizer = None
@@ -30,6 +34,7 @@ class ModelHandler:
         
     def load_model(self):
         """Load the model and tokenizer"""
+        start_time = time.time()
         print(f"Loading model: {self.model_name}")
         
         # Set number of threads for CPU inference
@@ -57,8 +62,9 @@ class ModelHandler:
                 torch_dtype=torch.float32,
                 device_map="cpu"
             )
-            
-        print("Model loaded successfully!")
+        
+        load_time = (time.time() - start_time) * 1000
+        print(f"Model loaded successfully! (took {load_time:.2f}ms)")
         
     def _build_prompt(self, user_input: str) -> str:
         """Build the prompt with conversation history"""
@@ -77,18 +83,28 @@ class ModelHandler:
         prompt += "Assistant:"
         return prompt
         
-    def generate_response(self, prompt: str) -> str:
+    def generate_response(self, prompt: str) -> Dict[str, any]:
         """Generate a response for the given prompt"""
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model not loaded. Call load_model() first.")
             
         try:
+            # Start timing
+            start_time = time.time()
+            
             # Build the full prompt with conversation history
             full_prompt = self._build_prompt(prompt)
             
-            # Tokenize and generate
-            inputs = self.tokenizer(full_prompt, return_tensors="pt", padding=True).to(self.model.device)
+            # Time for prompt building
+            prompt_time = (time.time() - start_time) * 1000
             
+            # Tokenize and generate
+            tokenize_start = time.time()
+            inputs = self.tokenizer(full_prompt, return_tensors="pt", padding=True).to(self.model.device)
+            tokenize_time = (time.time() - tokenize_start) * 1000
+            
+            # Generate response
+            generate_start = time.time()
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
@@ -100,18 +116,36 @@ class ModelHandler:
                     pad_token_id=self.tokenizer.pad_token_id,
                     eos_token_id=self.tokenizer.eos_token_id
                 )
-                
-            # Decode the response
-            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            generate_time = (time.time() - generate_start) * 1000
             
-            # Extract just the assistant's response
+            # Decode the response
+            decode_start = time.time()
+            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             response = response.split("Assistant:")[-1].strip()
+            decode_time = (time.time() - decode_start) * 1000
             
             # Add the response to conversation history
             self.conversation_history.append({"role": "assistant", "content": response})
             
-            return response
+            # Calculate total time
+            total_time = (time.time() - start_time) * 1000
+            
+            # Return response with timing information
+            return {
+                "response": response,
+                "timing": {
+                    "prompt_building": prompt_time,
+                    "tokenization": tokenize_time,
+                    "generation": generate_time,
+                    "decoding": decode_time,
+                    "total": total_time
+                }
+            }
             
         except Exception as e:
             print(f"Error generating response: {str(e)}")
-            return "I apologize, but I encountered an error. Could you please try again?" 
+            return {
+                "response": "I apologize, but I encountered an error. Could you please try again?",
+                "timing": None,
+                "error": str(e)
+            } 

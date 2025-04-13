@@ -26,6 +26,7 @@ A modular CLI chatbot with Discord webhook integration that can work with variou
    REPETITION_PENALTY=1.1
    USE_GPU=true
    NUM_THREADS=4
+   DEBUG_MODE=false
    ```
 
 ## Usage
