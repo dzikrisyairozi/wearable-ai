@@ -20,12 +20,19 @@ A modular CLI chatbot with Discord webhook integration optimized for edge device
 3. Copy `.env.example` to `.env` and configure:
    ```
    DISCORD_WEBHOOK_URL=your_discord_webhook_url_here
+   
+   # For 2-4GB RAM devices (TinyLlama):
    MODEL_NAME=TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF
    MODEL_FILE=tinyllama-1.1b-chat-v1.0.Q3_K_S.gguf
+   
+   # For 8GB+ RAM devices (Mistral, recommended):
+   # MODEL_NAME=TheBloke/Mistral-7B-Instruct-v0.1-GGUF
+   # MODEL_FILE=mistral-7b-instruct-v0.1.Q4_K_M.gguf
+   
    MAX_TOKENS=512
-   TEMPERATURE=0.7
+   TEMPERATURE=0.3
    TOP_P=0.95
-   TOP_K=40
+   TOP_K=20
    NUM_THREADS=4
    DEBUG_MODE=false
    ```
@@ -65,28 +72,48 @@ src/
 ## Requirements
 
 - Python 3.8+
-- 2GB RAM minimum (4GB recommended)
+- RAM requirements depend on model choice:
+  - 2GB RAM minimum for TinyLlama
+  - 4GB RAM for Phi-2
+  - 8GB RAM recommended for Mistral-7B
 - Discord webhook URL
 - No GPU required
 
 ## Supported Models
 
-The chatbot is optimized for GGUF quantized models, which provide fast CPU inference and low memory usage. The default configuration uses TinyLlama GGUF, which offers an excellent balance of performance and resource usage for edge devices.
+The chatbot is optimized for GGUF quantized models, which provide fast CPU inference and low memory usage. Choose your model based on available system resources:
 
-Recommended GGUF models:
-- TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF (default, ~1GB RAM)
-  - Q3_K_S.gguf - Fastest, good for 2GB RAM devices
-  - Q4_K_M.gguf - Better quality, needs 3GB+ RAM
-- TheBloke/Phi-2-GGUF (good alternative)
-  - phi-2.Q3_K_S.gguf - Balanced performance
-- TheBloke/neural-chat-7B-v3-1-GGUF (more powerful, needs 4GB+ RAM)
+### Entry Level (2-4GB RAM)
+- **TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF**
+  - Q3_K_S.gguf (~1GB RAM) - Fastest, good for 2GB devices
+  - Q4_K_M.gguf (~1.5GB RAM) - Better quality, needs 3GB+ RAM
+  - Best for: Basic chat, simple tasks, resource-constrained devices
+  
+### Mid Range (4-6GB RAM)
+- **TheBloke/Phi-2-GGUF**
+  - phi-2.Q3_K_S.gguf (~2GB RAM) - Balanced performance
+  - phi-2.Q4_K_M.gguf (~2.5GB RAM) - Better quality
+  - Best for: Improved reasoning, better response quality
+
+### High Performance (8GB+ RAM)
+- **TheBloke/Mistral-7B-Instruct-v0.1-GGUF** (Recommended)
+  - Q3_K_S.gguf (~4GB RAM) - Good balance of size/quality
+  - Q4_K_M.gguf (~5GB RAM) - Excellent quality, recommended
+  - Best for: Complex reasoning, multilingual support, high-quality responses
 
 ## Performance
 
-Typical performance metrics on Raspberry Pi 4:
-- Memory Usage: ~1GB with Q3_K_S quantization
+Performance varies by model and quantization:
+
+### TinyLlama (2-4GB RAM):
+- Memory: ~1GB with Q3_K_S
 - Response Time: 5-10 seconds
-- No GPU required for inference
+- Quality: Basic, suitable for simple tasks
+
+### Mistral-7B (8GB+ RAM):
+- Memory: ~5GB with Q4_K_M
+- Response Time: 10-20 seconds
+- Quality: Excellent, with strong multilingual support
 
 ## Debug Mode
 
@@ -95,3 +122,10 @@ When DEBUG_MODE=true in .env:
 - Displays generation timing information
 - Reports token usage statistics
 - Includes debug info in Discord messages
+
+## Model Selection Guide
+
+1. For Raspberry Pi 4 (2GB): Use TinyLlama with Q3_K_S
+2. For Raspberry Pi 4 (4GB): Use Phi-2 with Q3_K_S
+3. For Raspberry Pi 4 (8GB): Use Mistral-7B with Q4_K_M (recommended)
+4. For Desktop/Server: Use Mistral-7B with Q5_K_M for best quality

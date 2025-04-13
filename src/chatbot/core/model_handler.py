@@ -11,8 +11,8 @@ load_dotenv()
 class ModelHandler:
     def __init__(self):
         # Model configuration
-        self.model_name = os.getenv("MODEL_NAME", "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF")
-        self.model_file = os.getenv("MODEL_FILE", "tinyllama-1.1b-chat-v1.0.Q3_K_S.gguf")
+        self.model_name = os.getenv("MODEL_NAME", "TheBloke/Mistral-7B-Instruct-v0.1-GGUF")
+        self.model_file = os.getenv("MODEL_FILE", "mistral-7b-instruct-v0.1.Q4_K_M.gguf")
         
         # Generation parameters
         self.max_tokens = int(os.getenv("MAX_TOKENS", "512"))
@@ -36,8 +36,8 @@ class ModelHandler:
         """Download the GGUF model if not present"""
         if not os.path.exists(self.model_file):
             print(f"Downloading model {self.model_file}...")
-
-            url = f"https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/{self.model_file}"
+            # Construct the correct HuggingFace API URL
+            url = f"https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/{self.model_file}"
             
             response = requests.get(url, stream=True)
             response.raise_for_status()
@@ -63,7 +63,7 @@ class ModelHandler:
         self.model = Llama(
             model_path=self.model_file,
             n_threads=self.num_threads,    # Use all CPU threads
-            n_ctx=2048,                    # Context window
+            n_ctx=4096,                    # Context window
             n_batch=512,                   # Batch size for prompt processing
         )
         
